@@ -1,0 +1,44 @@
+#include "clearpair.h"
+
+int clearPairSpotter(Cell*** board, Lines* group, Reduce** head) {
+    int counter = 0;
+    int rangeA, rangeB;
+
+    for (int i = 0; i < 9; i++) {
+        if (group -> memberArray[i] -> value != -1) continue;
+        for (int j = i + 1; j < 9; j++) {
+            if (group -> memberArray[j] -> value != -1) continue;
+            rangeB = rangeA | group -> memberArray[j] -> possibility;
+
+            if (bitcounter(rangeB) == 2) {
+                if (group -> memberArray[i] -> marked != 1 && group -> memberArray[j] -> marked !=1)
+                    counter++;
+
+                group -> memberArray[i] -> marked = 1;
+                group -> memberArray[j] -> marked = 1;
+
+                int* exclude = malloc(sizeof(int) * 9);
+                exclude[i] = exclude[j] = 1;
+
+                newBlank(head, (~rangeB) & all_candidates, group -> memberArray, exclude);
+            }
+        }
+    }
+
+    return counter;
+}
+
+int clearPairChecker(Cell*** board, Lines** box, Lines** rows, Lines** columns) {
+    int counter = 0;
+    Reduce* head = NULL;
+
+    markerCleaner(board);
+    for(int mem = 0; mem < 9; mem++) {
+        counter += clearPairSpotter(board, rows[mem], &head);
+        counter += clearPairSpotter(board, columns[mem], &head);
+        counter += clearPairSpotter(board, box[mem], &head);
+    }
+
+    applyBlank(&head);
+    return counter;
+}
